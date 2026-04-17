@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('backHomeBtn').addEventListener('click', goHome);
   document.getElementById('sidebarToggle').addEventListener('click', () => toggleSidebar(false));
 
-  // Mobile overlay click closes sidebar
   const overlay = document.getElementById('sidebarOverlay');
   if (overlay) overlay.addEventListener('click', () => toggleSidebar(false));
 
@@ -30,9 +29,7 @@ function checkDarkPref() {
   }
 }
 
-function toggleDark() {
-  setDark(!isDark);
-}
+function toggleDark() { setDark(!isDark); }
 
 function setDark(dark, save = true) {
   isDark = dark;
@@ -65,15 +62,10 @@ function updateLang() {
 // ── SIDEBAR ────────────────────────────────────────────────
 function toggleSidebar(open) {
   const isMobile = window.innerWidth <= 768;
-  if (typeof open === 'boolean') {
-    sidebarOpen = open;
-  } else {
-    sidebarOpen = !sidebarOpen;
-  }
+  sidebarOpen = (typeof open === 'boolean') ? open : !sidebarOpen;
   const sidebar = document.getElementById('sidebar');
   const openBtn = document.getElementById('sidebarOpenBtn');
   const overlay = document.getElementById('sidebarOverlay');
-
   sidebar.classList.toggle('collapsed', !sidebarOpen);
   openBtn.classList.toggle('visible', !sidebarOpen);
   if (overlay) overlay.classList.toggle('visible', sidebarOpen && isMobile);
@@ -85,9 +77,7 @@ async function loadConversations() {
     const res = await fetch('/api/conversations');
     const convs = await res.json();
     renderChatList(convs);
-  } catch (e) {
-    console.error('Failed to load conversations', e);
-  }
+  } catch (e) { console.error('Failed to load conversations', e); }
 }
 
 function renderChatList(convs) {
@@ -113,23 +103,16 @@ async function loadConversation(convId) {
     const res = await fetch(`/api/conversations/${convId}`);
     const conv = await res.json();
     if (conv.error) return;
-
     currentConvId = convId;
     showChatScreen();
     document.getElementById('messages').innerHTML = '';
-
     conv.messages.forEach(msg => appendMessage(msg.role, msg.content, false));
     document.getElementById('breadcrumbCurrent').textContent = conv.title.substring(0, 30) + (conv.title.length > 30 ? '...' : '');
     loadConversations();
-
     const chat = document.getElementById('chatScreen');
     chat.scrollTop = chat.scrollHeight;
-
-    // Close sidebar on mobile
     if (window.innerWidth <= 768) toggleSidebar(false);
-  } catch (e) {
-    console.error('Failed to load conversation', e);
-  }
+  } catch (e) { console.error('Failed to load conversation', e); }
 }
 
 async function deleteConv(event, convId) {
@@ -186,6 +169,20 @@ function autoResize(el) {
   el.style.height = Math.min(el.scrollHeight, 120) + 'px';
 }
 
+// ── TYPEWRITER EFFECT ──────────────────────────────────────
+async function typeWriter(el, text, chatScreen) {
+  const words = text.split(' ');
+  let current = '';
+  for (const word of words) {
+    current += (current ? ' ' : '') + word;
+    el.innerHTML = formatMessage(current) + '<span class="streaming-cursor"></span>';
+    chatScreen.scrollTop = chatScreen.scrollHeight;
+    await new Promise(r => setTimeout(r, 20));
+  }
+  el.innerHTML = formatMessage(text);
+}
+
+// ── SEND MESSAGE ───────────────────────────────────────────
 async function sendMessage() {
   const input = document.getElementById('chatInput');
   const message = input.value.trim();
@@ -200,24 +197,29 @@ async function sendMessage() {
   showChatScreen();
   if (window.innerWidth <= 768) toggleSidebar(false);
 
+  // Get history from existing messages
   const messagesEl = document.getElementById('messages');
   const history = Array.from(messagesEl.querySelectorAll('.message')).map(el => ({
     role: el.classList.contains('user') ? 'user' : 'assistant',
     content: el.querySelector('.msg-bubble').innerText
   }));
 
+  // Add user message
   appendMessage('user', message, true);
 
-  // Create streaming assistant message
+  // Add assistant placeholder with typing indicator
   const assistantDiv = document.createElement('div');
   assistantDiv.className = 'message assistant';
   const now = new Date();
   const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-
   assistantDiv.innerHTML = `
     <div class="msg-avatar">✦</div>
     <div class="msg-content">
-      <div class="msg-bubble"><span id="streamText"></span><span class="streaming-cursor" id="cursor"></span></div>
+      <div class="msg-bubble typing-bubble">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
       <div class="msg-footer">
         <span class="msg-time">${timeStr}</span>
         <button class="copy-btn" onclick="copyMsg(this)">📋 Copy</button>
@@ -226,12 +228,8 @@ async function sendMessage() {
   `;
   messagesEl.appendChild(assistantDiv);
 
-  const streamText = assistantDiv.querySelector('#streamText');
-  const cursor = assistantDiv.querySelector('#cursor');
   const chatScreen = document.getElementById('chatScreen');
   chatScreen.scrollTop = chatScreen.scrollHeight;
-
-  let fullText = '';
 
   try {
     const convId = currentConvId || generateId();
@@ -241,45 +239,22 @@ async function sendMessage() {
       body: JSON.stringify({ message, history, conv_id: convId, lang: currentLang })
     });
 
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
+    const data = await res.json();
+    const bubble = assistantDiv.querySelector('.msg-bubble');
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
-
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        try {
-          const data = JSON.parse(line.slice(6));
-
-          if (data.token) {
-            fullText += data.token;
-            streamText.innerHTML = formatMessage(fullText);
-            chatScreen.scrollTop = chatScreen.scrollHeight;
-          }
-
-          if (data.done) {
-            cursor.remove();
-            currentConvId = data.conv_id;
-            showRelated(data.related);
-            document.getElementById('breadcrumbCurrent').textContent = message.substring(0, 35) + (message.length > 35 ? '...' : '');
-            loadConversations();
-          }
-
-          if (data.error) {
-            cursor.remove();
-            streamText.innerHTML = `❌ Error: ${data.error}`;
-          }
-        } catch (e) {}
-      }
+    if (data.error) {
+      bubble.innerHTML = `❌ Error: ${data.error}`;
+    } else {
+      currentConvId = data.conv_id;
+      // Typewriter effect
+      await typeWriter(bubble, data.response, chatScreen);
+      showRelated(data.related);
+      document.getElementById('breadcrumbCurrent').textContent = message.substring(0, 35) + (message.length > 35 ? '...' : '');
+      loadConversations();
     }
   } catch (e) {
-    cursor?.remove();
-    streamText.innerHTML = '❌ Connection error. Please try again.';
+    const bubble = assistantDiv.querySelector('.msg-bubble');
+    bubble.innerHTML = '❌ Connection error. Please try again.';
   }
 
   isLoading = false;
@@ -288,6 +263,7 @@ async function sendMessage() {
   input.focus();
 }
 
+// ── MESSAGE HELPERS ────────────────────────────────────────
 function appendMessage(role, content, animate) {
   const messages = document.getElementById('messages');
   const div = document.createElement('div');
@@ -295,23 +271,20 @@ function appendMessage(role, content, animate) {
   const now = new Date();
   const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
   const avatar = role === 'user' ? 'M' : '✦';
-  const formattedContent = formatMessage(content);
 
   if (role === 'user') {
     div.innerHTML = `
       <div class="msg-avatar">${avatar}</div>
       <div class="msg-content">
-        <div class="msg-bubble">${formattedContent}</div>
-        <div class="msg-footer">
-          <span class="msg-time">${timeStr}</span>
-        </div>
+        <div class="msg-bubble">${formatMessage(content)}</div>
+        <div class="msg-footer"><span class="msg-time">${timeStr}</span></div>
       </div>
     `;
   } else {
     div.innerHTML = `
       <div class="msg-avatar">${avatar}</div>
       <div class="msg-content">
-        <div class="msg-bubble">${formattedContent}</div>
+        <div class="msg-bubble">${formatMessage(content)}</div>
         <div class="msg-footer">
           <span class="msg-time">${timeStr}</span>
           <button class="copy-btn" onclick="copyMsg(this)">📋 Copy</button>
@@ -319,7 +292,6 @@ function appendMessage(role, content, animate) {
       </div>
     `;
   }
-
   messages.appendChild(div);
   return div;
 }
@@ -329,10 +301,7 @@ function copyMsg(btn) {
   navigator.clipboard.writeText(bubble.innerText).then(() => {
     btn.textContent = '✅ Copied!';
     btn.classList.add('copied');
-    setTimeout(() => {
-      btn.textContent = '📋 Copy';
-      btn.classList.remove('copied');
-    }, 2000);
+    setTimeout(() => { btn.textContent = '📋 Copy'; btn.classList.remove('copied'); }, 2000);
   });
 }
 
