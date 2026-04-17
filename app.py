@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session, Response, stream_with_context
+from flask import Flask, render_template, request, jsonify, Response, stream_with_context
 from groq import Groq
 import os
 import json
@@ -90,13 +90,13 @@ Categories by usage method:
 - Mixed (card or reimbursement): Education, Health, Wellness, Gym, Senior Expenses
 
 Coverflex AI:
-WhatsApp assistant for questions about benefits, taxes, insurance and reimbursements. Allows reimbursement requests with photo of invoice. Team handles thousands of conversations/week with 100% accuracy target.
+WhatsApp assistant for questions about benefits, taxes, insurance and reimbursements.
 
 App Coverflex:
 - Available for iOS (App Store) and Android (Google Play)
 - Web version: my.coverflex.com
 - Languages: Portuguese, English, Spanish, Italian
-- Features: check balance, request reimbursements, activate/manage card, add insurance dependents, view benefit categories, contact support
+- Features: check balance, request reimbursements, activate/manage card, add insurance dependents
 - Exclusive access for employees of client companies (invitation required)
 
 Integrations: Personio, BambooHR (native). REST API for custom integrations.
@@ -106,116 +106,67 @@ Integrations: Personio, BambooHR (native). REST API for custom integrations.
 CUSTOMERS & MARKET
 
 Ideal Customer Profile (ICP):
-- Companies 50-500 employees
-- Tech-forward, focused on talent retention
-- Dedicated Head of People
+- Companies 50-500 employees, tech-forward, focused on talent retention
 
 Reference clients: Santander, Natixis, Bolt, Revolut, OysterHR, Rows, Smartex, Emma, Remote, PwC, Unbabel
 
-Real testimonials:
-- Humberto Ayres Pereira (CEO Rows): "Coverflex enables Rows to offer a modern and efficient compensation package without complexity. We save time with Coverflex digital processes for HR and Finance."
-- Rita Franca (Head of People, Unbabel): "It's a very easy solution to implement, understand and manage. We know we're giving our people the best we can."
-
 Competitive positioning (vs Edenred and Sodexo):
 - Edenred/Sodexo in Italy charge up to 20% commission per transaction and pay merchants in 60-90 days
-- Coverflex: sustainable fees + 24h payment
-- Lower total cost of ownership
-- Better employee experience (modern app, autonomy, flexibility)
-- Competitors solve only one pain point; Coverflex is a 360° solution
+- Coverflex: sustainable fees + 24h payment, lower TCO, better employee experience
 
-Common objections and responses:
-1. "Edenred/Sodexo is cheaper" → Lower TCO + better employee experience + lower merchant fees
-2. "Complex integration" → REST API + native Personio/BambooHR connectors + assisted onboarding
-3. "Regulation/compliance" → Bank of Portugal license; GDPR compliance; Italy: INPS welfare aziendale compliance
-4. "Data security" → Sandbox demo available + certifications (ISO)
+Common objections:
+1. "Edenred/Sodexo is cheaper" → Lower TCO + better experience + lower merchant fees
+2. "Complex integration" → REST API + native connectors + assisted onboarding
+3. "Regulation/compliance" → Bank of Portugal license; GDPR; Italy: INPS welfare aziendale
 
 ---
 
 CULTURE & VALUES
 
-Core values:
-- Extreme Employee Obsession (Rule #1 AND Rule #2 of Coverflex — official quote)
-- Transparency
-- Integrity
-- Accountability
-- Continuous learning
-- Culture that values questions — "there are no stupid questions"
+Core values: Extreme Employee Obsession (Rule #1 AND #2), Transparency, Integrity, Accountability, Continuous learning
 
-Work mode:
-- 100% remote-first since founding
-- In-person meetings at least 2x per year (team retreats)
-- Flexible hours — no clock-in, agreed with team
-- All Hands periodically + open Q&A with leadership
+Work mode: 100% remote-first, flexible hours, in-person meetings 2x/year
 
-Brand manifesto:
-"We adapt. We change and grow. We're not measured by our titles. We focus on connecting, on personalisation, on adding value."
+Brand manifesto: "We adapt. We change and grow. We're not measured by our titles."
 
-Glassdoor (culture rating: 4.7/5):
-"Unusual transparency and openness. High ambition mixed with experience/rationality. Average team quality is very high."
+Glassdoor rating 4.7/5: "Unusual transparency and openness. High ambition mixed with rationality."
 
 ---
 
 EMPLOYEE BENEFITS (INTERNAL)
 
-Compensation package:
-- Stock Options via VSOP (Virtual Stock Option Plan) for ALL employees — pool of +11%. Managed on Ledgy platform.
+- Stock Options via VSOP for ALL employees — pool +11%, managed on Ledgy
 - Coverflex Card (employees use their own product)
-- Health insurance with family coverage option
-- 25 working days paid vacation per year — request via rh@coverflex.com
-- Extended parental leave: 2 additional paid weeks beyond legal maximum; children's birthdays are a day off
-- 3 Caring Days per year: for projects with positive social impact (in-person or remote)
+- Health insurance with family coverage
+- 25 working days paid vacation — request via rh@coverflex.com
+- Extended parental leave: 2 additional paid weeks; children's birthdays are a day off
+- 3 Caring Days/year for social impact projects
 - MacBook provided
-
-Annual budgets:
-- Remote Work Budget: €1,000/year for technology (monitor, chair, etc.), coworking, or working away from home
-- Personal Growth Budget: €1,000/year for courses, training, books, physical/psychological wellness, coaching
-- Onboarding Budget: €500 (one-time, for new employees) to improve home workspace — available as soon as account is active
+- Remote Work Budget: €1,000/year
+- Personal Growth Budget: €1,000/year
+- Onboarding Budget: €500 one-time
 
 Salary references:
 - Customer Success Manager: €33,000-40,000 base + bonus
 - AI Engineer: €50,000-60,000 base + VSOP
 - Backend Engineer: €50,000-80,000 base + VSOP
 - Key Account Manager (Spain): €35,000-45,000 base + commissions
-- Commercial roles: variable component (OTE 70/30 or 80/20)
 
 ---
 
 INTERNAL ONBOARDING
 
-First steps (first week):
-1. Wait for welcome email (notifications@coverflex.com)
-2. Create account at my.coverflex.com via invite link
-3. Set up personal data: NIF/tax number, address, IBAN
-4. Add health insurance dependents (deadline: 30 days — after that there's a waiting period)
-5. Receive and activate Coverflex card when it arrives (up to 2 weeks)
-6. Explore documentation on Notion
-7. Join Slack and introduce yourself in #general channel
+First steps:
+1. Welcome email from notifications@coverflex.com
+2. Create account at my.coverflex.com
+3. Set up NIF/tax number, address, IBAN
+4. Add health insurance dependents within 30 days
+5. Receive and activate Coverflex card (up to 2 weeks)
+6. Join Slack — introduce yourself in #general
 
-Tools to set up:
-- my.coverflex.com — manage benefits and card
-- Slack — daily communication; priority channels: #general, #hr, #support, #tech, #product
-- Google Calendar — meetings and team agenda
-- Notion — internal documentation
-- GitHub — code (technical team)
-- Linear — product management
-- HubSpot — CRM (commercial team)
-- Intercom — customer support
+Tools: my.coverflex.com, Slack, Google Calendar, Notion, GitHub, Linear, HubSpot, Intercom
 
-CEO quote about onboarding culture:
-"If you've worked at a startup before, you will adapt quickly; if not, buckle up, because you are in for one hell of a ride." — Miguel Santo Amaro
-
----
-
-CLIENT ONBOARDING
-
-Required KYB documents:
-- Signed KYB form: shareholder data, signed by manager
-- Permanent Certificate (or Deed of Incorporation)
-- RCBE (Central Register of Beneficial Owners)
-- Colored copies of ID card or passport of all managers
-
-Accepted formats: PDF, JPG, PNG (max 25MB)
-Deadline: documents not sent in 15 days → account blocked
+CEO quote: "If you've worked at a startup before, you will adapt quickly; if not, buckle up!" — Miguel Santo Amaro
 
 ---
 
@@ -223,51 +174,20 @@ REIMBURSEMENT PROCESS
 
 Steps:
 1. Pay with personal card
-2. Request invoice with name and tax number (date and amount visible)
-3. Take photo of invoice
-4. Upload to Coverflex platform, select correct category
-5. After approval: reimbursement within 2 business days
+2. Get invoice with name + tax number
+3. Photo of invoice
+4. Upload to Coverflex platform, correct category
+5. Reimbursement within 2 business days after approval
 
-Rejection reasons: illegible invoice, incorrect tax number, insufficient balance, expense not eligible, company policy
-
-Important: Expenses paid with Coverflex card CANNOT be claimed as reimbursement
+Rejection reasons: illegible invoice, wrong tax number, insufficient balance, ineligible expense
 
 ---
 
 HEALTH INSURANCE
 
-Coverage:
-- Hospitalization: €50,000 | network: 90% insurer + 10% employee
-- Outpatient consultations: €5,000
-- Childbirth: €3,000 | 90% insurer
-- Medications: €250 | 80% insurer + 20% employee
-- Prosthetics and orthotics: €1,000 (includes glasses and contact lenses)
-- Serious illnesses: €1,000,000 for cancer, neurosurgery, cardiac bypass, transplants
-- Outside network: 50% insurer + 50% employee
-
-Waiting periods: Hospitalization 90 days, Outpatient 90 days, Medications 90 days, Childbirth 365 days, Serious illnesses 180 days
-
-Dependents monthly cost (Mar 2025 – Feb 2026): €76.33/month; children <18: €62.08/month
-
----
-
-LOGIN & ACCESS
-
-Normal login: Coverflex app or my.coverflex.com — Email + password + 2FA via SMS (valid 10 minutes)
-
-Common problems:
-- Expired invite → request new via help@coverflex.com
-- Forgot password → "Recover password" on login screen
-
----
-
-TECH STACK
-
-Backend: Elixir, Phoenix, PostgreSQL, AWS, Kubernetes
-AI team: OpenAI API, Vercel SDK, Langsmith, Cursor, Claude Code
-Data: BigQuery, DBT, Prefect, Python, GCP
-
-Technical leadership: CTO Tiago Fernandes, VP Engineering Bruno Oliveira, Chief Architect Carlos Silva
+Coverage: Hospitalization €50,000 (90% insurer), Outpatient €5,000, Childbirth €3,000, Medications €250, Serious illnesses €1,000,000
+Waiting periods: Hospitalization/Outpatient/Medications 90 days, Childbirth 365 days, Serious illnesses 180 days
+Dependents cost (Mar 2025-Feb 2026): €76.33/month, children <18: €62.08/month
 
 ---
 
@@ -278,7 +198,6 @@ CONTACTS & SUPPORT
 - Italy: aiuto@coverflex.com
 - HR: rh@coverflex.com
 - IT Support: it-support@coverflex.com
-- Coverflex AI WhatsApp: quick questions 24/7
 - Slack: #general, #hr, #support, #tech, #product
 """
 
@@ -337,84 +256,55 @@ def load_conv(conv_id):
             return json.load(f)
     return None
 
+def build_messages(message, history, lang):
+    if lang == 'pt':
+        system = """És o assistente de conhecimento interno da Coverflex — fintech portuguesa líder em benefícios flexíveis, fundada em 2021, presente em Portugal, Espanha e Itália.
+Respondes SEMPRE em Português de Portugal. Tom profissional, claro e direto.
+Regras: usa a knowledge base; se não souberes indica rh@coverflex.com ou help@coverflex.com; sê concreto; varia as aberturas; usa formatação clara."""
+    else:
+        system = """You are the internal knowledge assistant for Coverflex — a leading Portuguese fintech in flexible benefits, founded in 2021, present in Portugal, Spain and Italy.
+You ALWAYS respond in English. Professional, clear and direct tone.
+Rules: use the knowledge base; if unsure direct to rh@coverflex.com or help@coverflex.com; be specific; vary your openings; use clear formatting."""
+
+    messages = [{"role": "system", "content": system + "\n\nKnowledge Base:\n" + KNOWLEDGE_BASE}]
+    for h in history[-8:]:
+        messages.append({"role": h["role"], "content": h["content"]})
+    messages.append({"role": "user", "content": message})
+    return messages
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/api/chat/stream', methods=['POST'])
-def chat_stream():
+# ── REGULAR ENDPOINT (used by frontend) ──
+@app.route('/api/chat', methods=['POST'])
+def chat():
     data = request.json
     message = data.get('message', '')
     history = data.get('history', [])
     conv_id = data.get('conv_id', str(uuid.uuid4()))
     lang = data.get('lang', 'en')
 
-    if lang == 'pt':
-        system = """És o assistente de conhecimento interno da Coverflex — fintech portuguesa líder em benefícios flexíveis, fundada em 2021, com presença em Portugal, Espanha e Itália.
+    messages = build_messages(message, history, lang)
 
-Respondes SEMPRE em Português de Portugal. Tom profissional, claro e direto — como um colega sénior bem informado.
-
-Regras:
-1. Usa a informação da knowledge base
-2. Se não tiveres informação, indica qual equipa contactar (RH: rh@coverflex.com, Suporte: help@coverflex.com)
-3. Sê concreto e específico
-4. Varia as aberturas — não comeces sempre com "Olá!"
-5. Usa formatação clara quando útil"""
-    else:
-        system = """You are the internal knowledge assistant for Coverflex — a leading Portuguese fintech in flexible benefits management, founded in 2021, present in Portugal, Spain and Italy.
-
-You ALWAYS respond in English. Professional, clear and direct tone — like a well-informed senior colleague.
-
-Rules:
-1. Use the information from the knowledge base
-2. If you don't have enough information, indicate which team to contact (HR: rh@coverflex.com, Support: help@coverflex.com)
-3. Be concrete and specific
-4. Vary your openings — don't always start with "Hello!"
-5. Use clear formatting when useful (lists, bold)"""
-
-    messages = [{"role": "system", "content": system + "\n\nKnowledge Base:\n" + KNOWLEDGE_BASE}]
-    for h in history[-8:]:
-        messages.append({"role": h["role"], "content": h["content"]})
-    messages.append({"role": "user", "content": message})
-
-    def generate():
-        full_response = ""
-        try:
-            stream = groq_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=messages,
-                max_tokens=1000,
-                temperature=0.65,
-                stream=True
-            )
-            for chunk in stream:
-                delta = chunk.choices[0].delta.content
-                if delta:
-                    full_response += delta
-                    yield f"data: {json.dumps({'token': delta})}\n\n"
-
-            # Send related questions and save conversation
-            related = get_related(message)
-            all_messages = history + [
-                {"role": "user", "content": message},
-                {"role": "assistant", "content": full_response}
-            ]
-            title = message[:40] + "..." if len(message) > 40 else message
-            save_conv(conv_id, all_messages, title)
-
-            yield f"data: {json.dumps({'done': True, 'related': related, 'conv_id': conv_id})}\n\n"
-
-        except Exception as e:
-            yield f"data: {json.dumps({'error': str(e)})}\n\n"
-
-    return Response(
-        stream_with_context(generate()),
-        mimetype='text/event-stream',
-        headers={
-            'Cache-Control': 'no-cache',
-            'X-Accel-Buffering': 'no'
-        }
-    )
+    try:
+        r = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            max_tokens=1000,
+            temperature=0.65
+        )
+        response = r.choices[0].message.content
+        related = get_related(message)
+        all_messages = history + [
+            {"role": "user", "content": message},
+            {"role": "assistant", "content": response}
+        ]
+        title = message[:40] + "..." if len(message) > 40 else message
+        save_conv(conv_id, all_messages, title)
+        return jsonify({"response": response, "related": related, "conv_id": conv_id})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/conversations', methods=['GET'])
 def conversations():
@@ -436,41 +326,3 @@ def delete_conversation(conv_id):
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
-@app.route('/api/chat', methods=['POST'])
-def chat():
-    data = request.json
-    message = data.get('message', '')
-    history = data.get('history', [])
-    conv_id = data.get('conv_id', str(uuid.uuid4()))
-    lang = data.get('lang', 'en')
-
-    if lang == 'pt':
-        system = """És o assistente de conhecimento interno da Coverflex. Respondes SEMPRE em Português de Portugal. Tom profissional, claro e direto."""
-    else:
-        system = """You are the internal knowledge assistant for Coverflex. You ALWAYS respond in English. Professional, clear and direct tone."""
-
-    messages = [{"role": "system", "content": system + "\n\nKnowledge Base:\n" + KNOWLEDGE_BASE}]
-    for h in history[-8:]:
-        messages.append({"role": h["role"], "content": h["content"]})
-    messages.append({"role": "user", "content": message})
-
-    try:
-        r = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=messages,
-            max_tokens=1000,
-            temperature=0.65
-        )
-        response = r.choices[0].message.content
-        related = get_related(message)
-        all_messages = history + [
-            {"role": "user", "content": message},
-            {"role": "assistant", "content": response}
-        ]
-        title = message[:40] + "..." if len(message) > 40 else message
-        save_conv(conv_id, all_messages, title)
-        return jsonify({"response": response, "related": related, "conv_id": conv_id})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-  
