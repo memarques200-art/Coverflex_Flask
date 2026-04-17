@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coverflex AI</title>
+<link rel="icon" href="https://www.coverflex.com/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Serif+Display&display=swap">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+
+  <!-- Logo -->
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-icon">✦</div>
+      <div class="logo-text">
+        <span class="logo-name">Coverflex</span>
+        <span class="logo-sub">AI Assistant</span>
+      </div>
+    </div>
+    <button class="sidebar-toggle" id="sidebarToggle" title="Close sidebar">‹</button>
+  </div>
+
+  <!-- New Chat -->
+  <div class="sidebar-section">
+    <button class="new-chat-btn" id="newChatBtn">
+      <span>＋</span> New Chat
+    </button>
+  </div>
+
+  <!-- Language toggle -->
+  <div class="sidebar-section">
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="langEN" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" id="langPT" onclick="setLang('pt')">PT</button>
+    </div>
+  </div>
+
+  <!-- Knowledge Base categories -->
+  <div class="sidebar-section">
+    <div class="section-label" data-en="Knowledge Base" data-pt="Base de Conhecimento">Knowledge Base</div>
+    <nav class="kb-nav">
+      <a class="kb-item active" href="#" onclick="askQuestion('How can you help me today?', event)">
+        <span class="kb-icon" style="background:#FEF0EB;">✦</span>
+        <span data-en="General" data-pt="Geral">General</span>
+        <span class="kb-arrow">›</span>
+      </a>
+      <a class="kb-item" href="#" onclick="askQuestion('What is the daily limit of the Coverflex meal card?', event)">
+        <span class="kb-icon" style="background:#FDE8F2;">🍽️</span>
+        <span data-en="Meal Card" data-pt="Cartão Refeição">Meal Card</span>
+        <span class="kb-arrow">›</span>
+      </a>
+      <a class="kb-item" href="#" onclick="askQuestion('How do flexible benefits work at Coverflex?', event)">
+        <span class="kb-icon" style="background:#F0EDFF;">🎁</span>
+        <span data-en="Flexible Benefits" data-pt="Benefícios Flexíveis">Flexible Benefits</span>
+        <span class="kb-arrow">›</span>
+      </a>
+      <a class="kb-item" href="#" onclick="askQuestion('How does health insurance work at Coverflex?', event)">
+        <span class="kb-icon" style="background:#FDE8E7;">❤️</span>
+        <span data-en="Health Insurance" data-pt="Seguro Saúde">Health Insurance</span>
+        <span class="kb-arrow">›</span>
+      </a>
+      <a class="kb-item" href="#" onclick="askQuestion('What discounts are available through Coverflex?', event)">
+        <span class="kb-icon" style="background:#E6F7F1;">🏷️</span>
+        <span data-en="Discounts" data-pt="Descontos">Discounts</span>
+        <span class="kb-arrow">›</span>
+      </a>
+      <a class="kb-item" href="#" onclick="askQuestion('How do I request a reimbursement at Coverflex?', event)">
+        <span class="kb-icon" style="background:#E0F5FE;">🔄</span>
+        <span data-en="Expenses" data-pt="Reembolsos">Expenses</span>
+        <span class="kb-arrow">›</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Search -->
+  <div class="sidebar-section">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search chats..." oninput="filterChats(this.value)">
+    </div>
+  </div>
+
+  <!-- Recent chats -->
+  <div class="sidebar-section sidebar-chats">
+    <div class="section-label" data-en="Recent Chats" data-pt="Conversas Recentes">Recent Chats</div>
+    <div id="chatList" class="chat-list">
+      <div class="chat-empty" data-en="No conversations yet" data-pt="Sem conversas ainda">No conversations yet</div>
+    </div>
+  </div>
+
+</aside>
+
+<!-- SIDEBAR OPEN BUTTON (when collapsed) -->
+<button class="sidebar-open-btn" id="sidebarOpenBtn" onclick="toggleSidebar()">›</button>
+
+<!-- MAIN -->
+<main class="main" id="main">
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="breadcrumb-home" data-en="Home" data-pt="Início">🏠 Home</span>
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current" id="breadcrumbCurrent">New Chat</span>
+    </div>
+    <div class="topbar-right">
+      <div class="kb-status" id="kbStatus">
+        <span class="status-dot green"></span>
+        <span data-en="Knowledge Base Active" data-pt="KB Ativa">Knowledge Base Active</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- WELCOME SCREEN -->
+  <div class="welcome" id="welcomeScreen">
+    <div class="welcome-hero">
+      <div class="hero-orb orb-1"></div>
+      <div class="hero-orb orb-2"></div>
+      <div class="welcome-icon">✦</div>
+      <h1 class="welcome-title">
+        <span data-en="Welcome to" data-pt="Bem-vindo ao">Welcome to</span>
+        <span class="highlight"> Coverflex AI</span>
+      </h1>
+      <p class="welcome-subtitle" data-en="Your intelligent assistant for employee benefits and flexible compensation questions." data-pt="O teu assistente inteligente para benefícios e compensação flexível.">
+        Your intelligent assistant for employee benefits and flexible compensation questions.
+      </p>
+      <p class="welcome-footer" data-en="✦ Powered by Coverflex AI · Always verify important information" data-pt="✦ Powered by Coverflex AI · Verifica sempre informações importantes">
+        ✦ Powered by Coverflex AI · Always verify important information
+      </p>
+    </div>
+
+    <div class="suggestions-grid" id="suggestionsGrid">
+      <button class="suggestion-card" onclick="askQuestion('What is the daily limit of the Coverflex meal card?')">
+        <span class="sugg-icon" style="background:#FDE8F2;">🍽️</span>
+        <div class="sugg-text">
+          <span class="sugg-title" data-en="Meal card daily limit?" data-pt="Limite diário do cartão refeição?">Meal card daily limit?</span>
+          <span class="sugg-sub" data-en="Learn about meal allowance" data-pt="Saber sobre subsídio de refeição">Learn about meal allowance</span>
+        </div>
+        <span class="sugg-arrow">›</span>
+      </button>
+      <button class="suggestion-card" onclick="askQuestion('How do flexible benefits work at Coverflex?')">
+        <span class="sugg-icon" style="background:#F0EDFF;">🎁</span>
+        <div class="sugg-text">
+          <span class="sugg-title" data-en="How do flexible benefits work?" data-pt="Como funcionam os benefícios?">How do flexible benefits work?</span>
+          <span class="sugg-sub" data-en="Explore all benefit categories" data-pt="Explorar categorias de benefícios">Explore all benefit categories</span>
+        </div>
+        <span class="sugg-arrow">›</span>
+      </button>
+      <button class="suggestion-card" onclick="askQuestion('How does health insurance work at Coverflex?')">
+        <span class="sugg-icon" style="background:#FDE8E7;">❤️</span>
+        <div class="sugg-text">
+          <span class="sugg-title" data-en="Tell me about health insurance" data-pt="Seguro de saúde na Coverflex">Tell me about health insurance</span>
+          <span class="sugg-sub" data-en="Coverage, dependents & more" data-pt="Coberturas, dependentes e mais">Coverage, dependents & more</span>
+        </div>
+        <span class="sugg-arrow">›</span>
+      </button>
+      <button class="suggestion-card" onclick="askQuestion('What benefits are available at Coverflex?')">
+        <span class="sugg-icon" style="background:#E6F7F1;">💼</span>
+        <div class="sugg-text">
+          <span class="sugg-title" data-en="What benefits are available?" data-pt="Que benefícios estão disponíveis?">What benefits are available?</span>
+          <span class="sugg-sub" data-en="Full benefits overview" data-pt="Visão geral de benefícios">Full benefits overview</span>
+        </div>
+        <span class="sugg-arrow">›</span>
+      </button>
+      <button class="suggestion-card" onclick="askQuestion('How do I request a reimbursement at Coverflex?')">
+        <span class="sugg-icon" style="background:#E0F5FE;">🔄</span>
+        <div class="sugg-text">
+          <span class="sugg-title" data-en="How to request reimbursement?" data-pt="Como pedir reembolso?">How to request reimbursement?</span>
+          <span class="sugg-sub" data-en="Step-by-step process" data-pt="Processo passo a passo">Step-by-step process</span>
+        </div>
+        <span class="sugg-arrow">›</span>
+      </button>
+      <button class="suggestion-card" onclick="askQuestion('What are the first steps as a new Coverflex employee?')">
+        <span class="sugg-icon" style="background:#FEF0EB;">👋</span>
+        <div class="sugg-text">
+          <span class="sugg-title" data-en="New employee onboarding" data-pt="Onboarding — novo colaborador">New employee onboarding</span>
+          <span class="sugg-sub" data-en="Your first week guide" data-pt="Guia da primeira semana">Your first week guide</span>
+        </div>
+        <span class="sugg-arrow">›</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- CHAT SCREEN -->
+  <div class="chat-screen hidden" id="chatScreen">
+    <div class="messages" id="messages"></div>
+
+    <!-- Related questions -->
+    <div class="related-section hidden" id="relatedSection">
+      <div class="related-label" data-en="💡 Related questions" data-pt="💡 Perguntas relacionadas">💡 Related questions</div>
+      <div class="related-btns" id="relatedBtns"></div>
+      <button class="back-home-btn" id="backHomeBtn">
+        <span>🏠</span>
+        <span data-en="Back to home" data-pt="Voltar ao início">Back to home</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- INPUT AREA -->
+  <div class="input-area">
+    <div class="input-wrap">
+      <div class="input-box">
+        <span class="input-icon">💬</span>
+        <textarea
+          id="chatInput"
+          placeholder="Ask about Coverflex benefits..."
+          rows="1"
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <span>↑</span>
+        </button>
+      </div>
+    </div>
+    <p class="input-footer" data-en="✦ Powered by Coverflex AI · Always verify important information" data-pt="✦ Powered by Coverflex AI · Verifica sempre informações importantes">
+      ✦ Powered by Coverflex AI · Always verify important information
+    </p>
+  </div>
+
+</main>
+
+<script src="/static/script.js"></script>
+</body>
+</html>
