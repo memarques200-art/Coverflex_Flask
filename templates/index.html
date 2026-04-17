@@ -6,15 +6,16 @@
 <title>Coverflex AI</title>
 <link rel="icon" href="https://www.coverflex.com/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Serif+Display&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
+<!-- Mobile sidebar overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
-
-  <!-- Logo -->
   <div class="sidebar-header">
     <div class="logo">
       <div class="logo-icon">✦</div>
@@ -26,14 +27,12 @@
     <button class="sidebar-toggle" id="sidebarToggle" title="Close sidebar">‹</button>
   </div>
 
-  <!-- New Chat -->
   <div class="sidebar-section">
     <button class="new-chat-btn" id="newChatBtn">
       <span>＋</span> New Chat
     </button>
   </div>
 
-  <!-- Language toggle -->
   <div class="sidebar-section">
     <div class="lang-toggle">
       <button class="lang-btn active" id="langEN" onclick="setLang('en')">EN</button>
@@ -41,7 +40,6 @@
     </div>
   </div>
 
-  <!-- Knowledge Base categories -->
   <div class="sidebar-section">
     <div class="section-label" data-en="Knowledge Base" data-pt="Base de Conhecimento">Knowledge Base</div>
     <nav class="kb-nav">
@@ -78,7 +76,6 @@
     </nav>
   </div>
 
-  <!-- Search -->
   <div class="sidebar-section">
     <div class="search-box">
       <span class="search-icon">🔍</span>
@@ -86,23 +83,20 @@
     </div>
   </div>
 
-  <!-- Recent chats -->
   <div class="sidebar-section sidebar-chats">
     <div class="section-label" data-en="Recent Chats" data-pt="Conversas Recentes">Recent Chats</div>
     <div id="chatList" class="chat-list">
-      <div class="chat-empty" data-en="No conversations yet" data-pt="Sem conversas ainda">No conversations yet</div>
+      <div class="chat-empty">No conversations yet</div>
     </div>
   </div>
-
 </aside>
 
-<!-- SIDEBAR OPEN BUTTON (when collapsed) -->
-<button class="sidebar-open-btn" id="sidebarOpenBtn" onclick="toggleSidebar()">›</button>
+<!-- Sidebar open button -->
+<button class="sidebar-open-btn" id="sidebarOpenBtn" onclick="toggleSidebar(true)">›</button>
 
 <!-- MAIN -->
 <main class="main" id="main">
 
-  <!-- Top bar -->
   <header class="topbar">
     <div class="topbar-left">
       <span class="breadcrumb-home" data-en="Home" data-pt="Início">🏠 Home</span>
@@ -110,14 +104,15 @@
       <span class="breadcrumb-current" id="breadcrumbCurrent">New Chat</span>
     </div>
     <div class="topbar-right">
-      <div class="kb-status" id="kbStatus">
+      <button class="dark-toggle" id="darkToggle" onclick="toggleDark()" title="Toggle dark mode">🌙</button>
+      <div class="kb-status">
         <span class="status-dot green"></span>
         <span data-en="Knowledge Base Active" data-pt="KB Ativa">Knowledge Base Active</span>
       </div>
     </div>
   </header>
 
-  <!-- WELCOME SCREEN -->
+  <!-- WELCOME -->
   <div class="welcome" id="welcomeScreen">
     <div class="welcome-hero">
       <div class="hero-orb orb-1"></div>
@@ -135,7 +130,7 @@
       </p>
     </div>
 
-    <div class="suggestions-grid" id="suggestionsGrid">
+    <div class="suggestions-grid">
       <button class="suggestion-card" onclick="askQuestion('What is the daily limit of the Coverflex meal card?')">
         <span class="sugg-icon" style="background:#FDE8F2;">🍽️</span>
         <div class="sugg-text">
@@ -187,11 +182,9 @@
     </div>
   </div>
 
-  <!-- CHAT SCREEN -->
+  <!-- CHAT -->
   <div class="chat-screen hidden" id="chatScreen">
     <div class="messages" id="messages"></div>
-
-    <!-- Related questions -->
     <div class="related-section hidden" id="relatedSection">
       <div class="related-label" data-en="💡 Related questions" data-pt="💡 Perguntas relacionadas">💡 Related questions</div>
       <div class="related-btns" id="relatedBtns"></div>
@@ -202,21 +195,13 @@
     </div>
   </div>
 
-  <!-- INPUT AREA -->
+  <!-- INPUT -->
   <div class="input-area">
     <div class="input-wrap">
       <div class="input-box">
         <span class="input-icon">💬</span>
-        <textarea
-          id="chatInput"
-          placeholder="Ask about Coverflex benefits..."
-          rows="1"
-          onkeydown="handleKey(event)"
-          oninput="autoResize(this)"
-        ></textarea>
-        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-          <span>↑</span>
-        </button>
+        <textarea id="chatInput" placeholder="Ask about Coverflex benefits..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()"><span>↑</span></button>
       </div>
     </div>
     <p class="input-footer" data-en="✦ Powered by Coverflex AI · Always verify important information" data-pt="✦ Powered by Coverflex AI · Verifica sempre informações importantes">
