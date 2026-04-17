@@ -235,7 +235,7 @@ async function sendMessage() {
 
   try {
     const convId = currentConvId || generateId();
-    const res = await fetch('/api/chat/stream', {
+    const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, history, conv_id: convId, lang: currentLang })
