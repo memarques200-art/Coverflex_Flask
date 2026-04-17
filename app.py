@@ -436,3 +436,41 @@ def delete_conversation(conv_id):
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    data = request.json
+    message = data.get('message', '')
+    history = data.get('history', [])
+    conv_id = data.get('conv_id', str(uuid.uuid4()))
+    lang = data.get('lang', 'en')
+
+    if lang == 'pt':
+        system = """És o assistente de conhecimento interno da Coverflex. Respondes SEMPRE em Português de Portugal. Tom profissional, claro e direto."""
+    else:
+        system = """You are the internal knowledge assistant for Coverflex. You ALWAYS respond in English. Professional, clear and direct tone."""
+
+    messages = [{"role": "system", "content": system + "\n\nKnowledge Base:\n" + KNOWLEDGE_BASE}]
+    for h in history[-8:]:
+        messages.append({"role": h["role"], "content": h["content"]})
+    messages.append({"role": "user", "content": message})
+
+    try:
+        r = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            max_tokens=1000,
+            temperature=0.65
+        )
+        response = r.choices[0].message.content
+        related = get_related(message)
+        all_messages = history + [
+            {"role": "user", "content": message},
+            {"role": "assistant", "content": response}
+        ]
+        title = message[:40] + "..." if len(message) > 40 else message
+        save_conv(conv_id, all_messages, title)
+        return jsonify({"response": response, "related": related, "conv_id": conv_id})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+  
