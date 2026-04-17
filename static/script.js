@@ -3,19 +3,44 @@ let currentLang = 'en';
 let currentConvId = null;
 let isLoading = false;
 let sidebarOpen = true;
+let isDark = false;
 
 // ── INIT ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadConversations();
   updateLang();
+  checkDarkPref();
 
   document.getElementById('newChatBtn').addEventListener('click', newChat);
   document.getElementById('backHomeBtn').addEventListener('click', goHome);
-  document.getElementById('sidebarToggle').addEventListener('click', toggleSidebar);
+  document.getElementById('sidebarToggle').addEventListener('click', () => toggleSidebar(false));
 
-  // Auto-focus input
+  // Mobile overlay click closes sidebar
+  const overlay = document.getElementById('sidebarOverlay');
+  if (overlay) overlay.addEventListener('click', () => toggleSidebar(false));
+
   document.getElementById('chatInput').focus();
 });
+
+// ── DARK MODE ──────────────────────────────────────────────
+function checkDarkPref() {
+  const saved = localStorage.getItem('cf-theme');
+  if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    setDark(true, false);
+  }
+}
+
+function toggleDark() {
+  setDark(!isDark);
+}
+
+function setDark(dark, save = true) {
+  isDark = dark;
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  const btn = document.getElementById('darkToggle');
+  if (btn) btn.textContent = dark ? '☀️' : '🌙';
+  if (save) localStorage.setItem('cf-theme', dark ? 'dark' : 'light');
+}
 
 // ── LANGUAGE ───────────────────────────────────────────────
 function setLang(lang) {
@@ -27,30 +52,31 @@ function setLang(lang) {
 
 function updateLang() {
   const isEN = currentLang === 'en';
-
-  // Update all data-en/data-pt elements
   document.querySelectorAll('[data-en]').forEach(el => {
     el.textContent = isEN ? el.dataset.en : el.dataset.pt;
   });
-
-  // Update placeholder
-  const input = document.getElementById('chatInput');
-  input.placeholder = isEN
+  document.getElementById('chatInput').placeholder = isEN
     ? 'Ask about Coverflex benefits...'
     : 'Pergunta sobre benefícios Coverflex...';
-
-  // Update search placeholder
   const search = document.getElementById('searchInput');
   if (search) search.placeholder = isEN ? '🔍 Search chats...' : '🔍 Pesquisar conversas...';
 }
 
 // ── SIDEBAR ────────────────────────────────────────────────
-function toggleSidebar() {
-  sidebarOpen = !sidebarOpen;
+function toggleSidebar(open) {
+  const isMobile = window.innerWidth <= 768;
+  if (typeof open === 'boolean') {
+    sidebarOpen = open;
+  } else {
+    sidebarOpen = !sidebarOpen;
+  }
   const sidebar = document.getElementById('sidebar');
   const openBtn = document.getElementById('sidebarOpenBtn');
+  const overlay = document.getElementById('sidebarOverlay');
+
   sidebar.classList.toggle('collapsed', !sidebarOpen);
   openBtn.classList.toggle('visible', !sidebarOpen);
+  if (overlay) overlay.classList.toggle('visible', sidebarOpen && isMobile);
 }
 
 // ── CONVERSATIONS ──────────────────────────────────────────
@@ -67,18 +93,17 @@ async function loadConversations() {
 function renderChatList(convs) {
   const list = document.getElementById('chatList');
   if (!convs.length) {
-    list.innerHTML = `<div class="chat-empty" data-en="No conversations yet" data-pt="Sem conversas ainda">${currentLang === 'en' ? 'No conversations yet' : 'Sem conversas ainda'}</div>`;
+    list.innerHTML = `<div class="chat-empty">${currentLang === 'en' ? 'No conversations yet' : 'Sem conversas ainda'}</div>`;
     return;
   }
-
   list.innerHTML = convs.map(c => `
-    <button class="chat-list-item ${c.id === currentConvId ? 'active' : ''}"
-            onclick="loadConversation('${c.id}')">
+    <button class="chat-list-item ${c.id === currentConvId ? 'active' : ''}" onclick="loadConversation('${c.id}')">
       <span class="chat-item-icon">${c.id === currentConvId ? '🟠' : '💬'}</span>
       <div class="chat-item-info">
         <div class="chat-item-title">${escapeHtml(c.title)}</div>
         <div class="chat-item-date">${c.date}</div>
       </div>
+      <button class="chat-item-delete" onclick="deleteConv(event, '${c.id}')" title="Delete">✕</button>
     </button>
   `).join('');
 }
@@ -91,29 +116,31 @@ async function loadConversation(convId) {
 
     currentConvId = convId;
     showChatScreen();
+    document.getElementById('messages').innerHTML = '';
 
-    const messagesEl = document.getElementById('messages');
-    messagesEl.innerHTML = '';
-
-    conv.messages.forEach(msg => {
-      appendMessage(msg.role, msg.content, false);
-    });
-
+    conv.messages.forEach(msg => appendMessage(msg.role, msg.content, false));
     document.getElementById('breadcrumbCurrent').textContent = conv.title.substring(0, 30) + (conv.title.length > 30 ? '...' : '');
     loadConversations();
 
-    // Scroll to bottom
     const chat = document.getElementById('chatScreen');
     chat.scrollTop = chat.scrollHeight;
 
+    // Close sidebar on mobile
+    if (window.innerWidth <= 768) toggleSidebar(false);
   } catch (e) {
     console.error('Failed to load conversation', e);
   }
 }
 
+async function deleteConv(event, convId) {
+  event.stopPropagation();
+  await fetch(`/api/conversations/${convId}`, { method: 'DELETE' });
+  if (currentConvId === convId) newChat();
+  loadConversations();
+}
+
 function filterChats(term) {
-  const items = document.querySelectorAll('.chat-list-item');
-  items.forEach(item => {
+  document.querySelectorAll('.chat-list-item').forEach(item => {
     const title = item.querySelector('.chat-item-title')?.textContent.toLowerCase() || '';
     item.style.display = title.includes(term.toLowerCase()) ? 'flex' : 'none';
   });
@@ -131,11 +158,7 @@ function goHome() {
   document.getElementById('chatScreen').classList.add('hidden');
   document.getElementById('relatedSection').classList.add('hidden');
   document.getElementById('breadcrumbCurrent').textContent = 'New Chat';
-
-  // Remove active from all kb items, set General active
-  document.querySelectorAll('.kb-item').forEach((el, i) => {
-    el.classList.toggle('active', i === 0);
-  });
+  document.querySelectorAll('.kb-item').forEach((el, i) => el.classList.toggle('active', i === 0));
 }
 
 function showChatScreen() {
@@ -145,11 +168,8 @@ function showChatScreen() {
 
 function askQuestion(question, event) {
   if (event) event.preventDefault();
-
-  // Update active kb item
   document.querySelectorAll('.kb-item').forEach(el => el.classList.remove('active'));
-  if (event && event.currentTarget) event.currentTarget.classList.add('active');
-
+  if (event?.currentTarget) event.currentTarget.classList.add('active');
   document.getElementById('chatInput').value = question;
   sendMessage();
 }
@@ -178,57 +198,88 @@ async function sendMessage() {
   document.getElementById('relatedSection').classList.add('hidden');
 
   showChatScreen();
+  if (window.innerWidth <= 768) toggleSidebar(false);
 
-  // Get current history
-  const messages = document.getElementById('messages');
-  const history = Array.from(messages.querySelectorAll('.message')).map(el => ({
+  const messagesEl = document.getElementById('messages');
+  const history = Array.from(messagesEl.querySelectorAll('.message')).map(el => ({
     role: el.classList.contains('user') ? 'user' : 'assistant',
     content: el.querySelector('.msg-bubble').innerText
   }));
 
-  // Add user message
   appendMessage('user', message, true);
 
-  // Add typing indicator
-  const typingEl = addTyping();
+  // Create streaming assistant message
+  const assistantDiv = document.createElement('div');
+  assistantDiv.className = 'message assistant';
+  const now = new Date();
+  const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
 
-  // Scroll to bottom
+  assistantDiv.innerHTML = `
+    <div class="msg-avatar">✦</div>
+    <div class="msg-content">
+      <div class="msg-bubble"><span id="streamText"></span><span class="streaming-cursor" id="cursor"></span></div>
+      <div class="msg-footer">
+        <span class="msg-time">${timeStr}</span>
+        <button class="copy-btn" onclick="copyMsg(this)">📋 Copy</button>
+      </div>
+    </div>
+  `;
+  messagesEl.appendChild(assistantDiv);
+
+  const streamText = assistantDiv.querySelector('#streamText');
+  const cursor = assistantDiv.querySelector('#cursor');
   const chatScreen = document.getElementById('chatScreen');
   chatScreen.scrollTop = chatScreen.scrollHeight;
 
+  let fullText = '';
+
   try {
-    const res = await fetch('/api/chat', {
+    const convId = currentConvId || generateId();
+    const res = await fetch('/api/chat/stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message,
-        history,
-        conv_id: currentConvId || generateId(),
-        lang: currentLang
-      })
+      body: JSON.stringify({ message, history, conv_id: convId, lang: currentLang })
     });
 
-    const data = await res.json();
-    typingEl.remove();
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
 
-    if (data.error) {
-      appendMessage('assistant', `❌ Error: ${data.error}`, true);
-    } else {
-      currentConvId = data.conv_id;
-      appendMessage('assistant', data.response, true);
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-      // Show related questions
-      showRelated(data.related);
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n');
 
-      // Update breadcrumb
-      document.getElementById('breadcrumbCurrent').textContent = message.substring(0, 35) + (message.length > 35 ? '...' : '');
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const data = JSON.parse(line.slice(6));
 
-      // Refresh chat list
-      loadConversations();
+          if (data.token) {
+            fullText += data.token;
+            streamText.innerHTML = formatMessage(fullText);
+            chatScreen.scrollTop = chatScreen.scrollHeight;
+          }
+
+          if (data.done) {
+            cursor.remove();
+            currentConvId = data.conv_id;
+            showRelated(data.related);
+            document.getElementById('breadcrumbCurrent').textContent = message.substring(0, 35) + (message.length > 35 ? '...' : '');
+            loadConversations();
+          }
+
+          if (data.error) {
+            cursor.remove();
+            streamText.innerHTML = `❌ Error: ${data.error}`;
+          }
+        } catch (e) {}
+      }
     }
   } catch (e) {
-    typingEl.remove();
-    appendMessage('assistant', '❌ Connection error. Please try again.', true);
+    cursor?.remove();
+    streamText.innerHTML = '❌ Connection error. Please try again.';
   }
 
   isLoading = false;
@@ -240,44 +291,57 @@ async function sendMessage() {
 function appendMessage(role, content, animate) {
   const messages = document.getElementById('messages');
   const div = document.createElement('div');
-  div.className = `message ${role}${animate ? '' : ''}`;
-
+  div.className = `message ${role}`;
+  const now = new Date();
+  const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
   const avatar = role === 'user' ? 'M' : '✦';
   const formattedContent = formatMessage(content);
 
-  div.innerHTML = `
-    <div class="msg-avatar">${avatar}</div>
-    <div class="msg-bubble">${formattedContent}</div>
-  `;
+  if (role === 'user') {
+    div.innerHTML = `
+      <div class="msg-avatar">${avatar}</div>
+      <div class="msg-content">
+        <div class="msg-bubble">${formattedContent}</div>
+        <div class="msg-footer">
+          <span class="msg-time">${timeStr}</span>
+        </div>
+      </div>
+    `;
+  } else {
+    div.innerHTML = `
+      <div class="msg-avatar">${avatar}</div>
+      <div class="msg-content">
+        <div class="msg-bubble">${formattedContent}</div>
+        <div class="msg-footer">
+          <span class="msg-time">${timeStr}</span>
+          <button class="copy-btn" onclick="copyMsg(this)">📋 Copy</button>
+        </div>
+      </div>
+    `;
+  }
 
   messages.appendChild(div);
   return div;
 }
 
-function addTyping() {
-  const messages = document.getElementById('messages');
-  const div = document.createElement('div');
-  div.className = 'message assistant typing';
-  div.innerHTML = `
-    <div class="msg-avatar">✦</div>
-    <div class="msg-bubble">
-      <div class="typing-dot"></div>
-      <div class="typing-dot"></div>
-      <div class="typing-dot"></div>
-    </div>
-  `;
-  messages.appendChild(div);
-  return div;
+function copyMsg(btn) {
+  const bubble = btn.closest('.msg-content').querySelector('.msg-bubble');
+  navigator.clipboard.writeText(bubble.innerText).then(() => {
+    btn.textContent = '✅ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
 }
 
 function showRelated(questions) {
   const section = document.getElementById('relatedSection');
   const btns = document.getElementById('relatedBtns');
-
   btns.innerHTML = questions.map(q => `
     <button class="related-btn" onclick="askRelated('${escapeHtml(q)}')">${escapeHtml(q)}</button>
   `).join('');
-
   section.classList.remove('hidden');
 }
 
@@ -292,27 +356,18 @@ function formatMessage(text) {
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     .replace(/`(.*?)`/g, '<code>$1</code>')
-    .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-    .replace(/^## (.*$)/gm, '<h3>$1</h3>')
-    .replace(/^# (.*$)/gm, '<h3>$1</h3>')
-    .replace(/^\* (.*$)/gm, '<li>$1</li>')
-    .replace(/^- (.*$)/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>')
-    .replace(/^(.+)$/gm, (match) => {
-      if (match.startsWith('<')) return match;
-      return match;
-    });
+    .replace(/^### (.*$)/gm, '<h3 style="font-size:14px;font-weight:600;margin:8px 0 4px;">$1</h3>')
+    .replace(/^## (.*$)/gm, '<h3 style="font-size:15px;font-weight:600;margin:10px 0 4px;">$1</h3>')
+    .replace(/^# (.*$)/gm, '<h3 style="font-size:16px;font-weight:700;margin:10px 0 6px;">$1</h3>')
+    .replace(/^[\*\-] (.*$)/gm, '<li>$1</li>')
+    .replace(/^\d+\. (.*$)/gm, '<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul style="padding-left:18px;margin:6px 0;">$1</ul>')
+    .replace(/\n\n/g, '</p><p style="margin-bottom:6px;">')
+    .replace(/\n/g, '<br>');
 }
 
 function escapeHtml(text) {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 }
 
 function generateId() {
