@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, Response, stream_with_context
 from groq import Groq
 import os
 import json
@@ -195,21 +195,11 @@ Tools to set up:
 - my.coverflex.com — manage benefits and card
 - Slack — daily communication; priority channels: #general, #hr, #support, #tech, #product
 - Google Calendar — meetings and team agenda
-- Notion — internal documentation (HR policies, product manuals, operational processes, FAQs)
+- Notion — internal documentation
 - GitHub — code (technical team)
 - Linear — product management
 - HubSpot — CRM (commercial team)
 - Intercom — customer support
-
-First week checklist:
-✅ Coverflex account active and data configured
-✅ Dependents added to insurance (if applicable, within 30 days)
-✅ Coverflex card received and activated
-✅ Slack active — introduction in #general
-✅ Notion documentation explored
-✅ First team meeting
-✅ First reimbursement submitted (e.g. Onboarding Budget of €500)
-✅ Coverflex AI on WhatsApp set up
 
 CEO quote about onboarding culture:
 "If you've worked at a startup before, you will adapt quickly; if not, buckle up, because you are in for one hell of a ride." — Miguel Santo Amaro
@@ -218,18 +208,11 @@ CEO quote about onboarding culture:
 
 CLIENT ONBOARDING
 
-Process for company:
-1. Platform subscription
-2. Coverflex sends KYB form (~1 week after start)
-3. Submission of required documents
-4. Platform configuration and employee invitation
-5. Employees receive welcome email and create account
-
 Required KYB documents:
-- Signed KYB form: shareholder data (name, tax number, country, % capital), signed by manager
-- Permanent Certificate (or Deed of Incorporation): proves legal constitution
-- RCBE (Central Register of Beneficial Owners): complete, updated
-- Colored copies of ID card (front and back) or passport of all managers
+- Signed KYB form: shareholder data, signed by manager
+- Permanent Certificate (or Deed of Incorporation)
+- RCBE (Central Register of Beneficial Owners)
+- Colored copies of ID card or passport of all managers
 
 Accepted formats: PDF, JPG, PNG (max 25MB)
 Deadline: documents not sent in 15 days → account blocked
@@ -245,24 +228,16 @@ Steps:
 4. Upload to Coverflex platform, select correct category
 5. After approval: reimbursement within 2 business days
 
-Rejection reasons:
-- Illegible invoice
-- Incorrect/missing tax number
-- Insufficient balance
-- Expense not eligible in selected category
-- Company internal policy
+Rejection reasons: illegible invoice, incorrect tax number, insufficient balance, expense not eligible, company policy
 
-Important rules:
-- Expenses paid with Coverflex card CANNOT be claimed as reimbursement
-- Health expenses paid with Coverflex card do not count for tax purposes
-- If pending request with wrong document: cancel and create new one
+Important: Expenses paid with Coverflex card CANNOT be claimed as reimbursement
 
 ---
 
 HEALTH INSURANCE
 
 Coverage:
-- Hospitalization: €50,000 | network: 90% insurer + 10% employee (min €250, max €500)
+- Hospitalization: €50,000 | network: 90% insurer + 10% employee
 - Outpatient consultations: €5,000
 - Childbirth: €3,000 | 90% insurer
 - Medications: €250 | 80% insurer + 20% employee
@@ -270,86 +245,41 @@ Coverage:
 - Serious illnesses: €1,000,000 for cancer, neurosurgery, cardiac bypass, transplants
 - Outside network: 50% insurer + 50% employee
 
-Waiting periods:
-- Hospitalization: 90 days
-- Outpatient consultations: 90 days
-- Medications: 90 days
-- Childbirth: 365 days
-- Serious illnesses: 180 days (always applicable)
+Waiting periods: Hospitalization 90 days, Outpatient 90 days, Medications 90 days, Childbirth 365 days, Serious illnesses 180 days
 
-Dependents:
-- Add via app → "Health Insurance" → "Add dependents"
-- Deadline: 30 days after start
-- Who can add: spouse/partner and children
-- Monthly cost per dependent (Mar 2025 – Feb 2026): €76.33/month; children <18: €62.08/month
+Dependents monthly cost (Mar 2025 – Feb 2026): €76.33/month; children <18: €62.08/month
 
 ---
 
 LOGIN & ACCESS
 
-First access:
-1. Follow invite link from company email
-2. Click "Create account"
-3. Set password and confirm data (tax number, address, IBAN)
-
-Normal login:
-- Coverflex app (iOS/Android) or my.coverflex.com
-- Email + password + two-factor authentication code via SMS (valid 10 minutes)
+Normal login: Coverflex app or my.coverflex.com — Email + password + 2FA via SMS (valid 10 minutes)
 
 Common problems:
-- Expired invite link → request new invite via support chat or help@coverflex.com
-- SMS code not received → wait up to 10 min, request new code
-- Forgot password → "Recover password" → email with link for new password
-- Change account email → only Coverflex team can do this; request via support chat
+- Expired invite → request new via help@coverflex.com
+- Forgot password → "Recover password" on login screen
 
 ---
 
 TECH STACK
 
-Backend: Elixir, Phoenix, Phoenix LiveView, PostgreSQL, AWS, Kubernetes
-DevOps: GitHub, GitHub Actions, ConfigCat, Datadog
+Backend: Elixir, Phoenix, PostgreSQL, AWS, Kubernetes
+AI team: OpenAI API, Vercel SDK, Langsmith, Cursor, Claude Code
+Data: BigQuery, DBT, Prefect, Python, GCP
 
-AI team: OpenAI API, Vercel SDK, Langsmith/Braintrust/Langfuse, Cursor/Codex/Claude Code
-
-Data stack: BigQuery, DBT, Semantic Layer, Prefect, Python, Hex, Lightdash, GCP, Terraform
-
-Technical leadership:
-- CTO and Co-Founder: Tiago Fernandes
-- VP of Engineering: Bruno Oliveira
-- Chief Architect: Carlos Silva
-
----
-
-RECRUITMENT PROCESS
-
-Steps:
-1. CV/LinkedIn Screening — feedback within 7 days
-2. Role-Fit Questionnaire — async questionnaire
-3. Hiring Manager Interview — 45-60 min
-4. Case / Work Sample — 20-30 min
-5. Cultural Interview — 30-45 min
-6. Final Conversation with CEO/C-Level — 30-45 min
-
-Details:
-- No cover letter required
-- Decision within 4 weeks
-- AI in recruitment: Teamtailor (CV anonymization) and ChatGPT (structured interview notes) — transparently; all applications reviewed by humans
+Technical leadership: CTO Tiago Fernandes, VP Engineering Bruno Oliveira, Chief Architect Carlos Silva
 
 ---
 
 CONTACTS & SUPPORT
 
-- Portugal support: help@coverflex.com
-- Spain support: ayuda@coverflex.com
-- Italy support: aiuto@coverflex.com
-- Human Resources: rh@coverflex.com
-- Technical Support: it-support@coverflex.com
-- Coverflex AI on WhatsApp: quick questions 24/7
-
-Internal communication:
-- Slack: #general, #hr, #support, #tech, #product + team channels
-- Meetings: Google Calendar
-- Documentation: Notion and Google Drive
+- Portugal: help@coverflex.com
+- Spain: ayuda@coverflex.com
+- Italy: aiuto@coverflex.com
+- HR: rh@coverflex.com
+- IT Support: it-support@coverflex.com
+- Coverflex AI WhatsApp: quick questions 24/7
+- Slack: #general, #hr, #support, #tech, #product
 """
 
 RELATED_QUESTIONS = {
@@ -411,8 +341,8 @@ def load_conv(conv_id):
 def index():
     return render_template('index.html')
 
-@app.route('/api/chat', methods=['POST'])
-def chat():
+@app.route('/api/chat/stream', methods=['POST'])
+def chat_stream():
     data = request.json
     message = data.get('message', '')
     history = data.get('history', [])
@@ -447,31 +377,44 @@ Rules:
         messages.append({"role": h["role"], "content": h["content"]})
     messages.append({"role": "user", "content": message})
 
-    try:
-        r = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=messages,
-            max_tokens=1000,
-            temperature=0.65
-        )
-        response = r.choices[0].message.content
-        related = get_related(message)
+    def generate():
+        full_response = ""
+        try:
+            stream = groq_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=messages,
+                max_tokens=1000,
+                temperature=0.65,
+                stream=True
+            )
+            for chunk in stream:
+                delta = chunk.choices[0].delta.content
+                if delta:
+                    full_response += delta
+                    yield f"data: {json.dumps({'token': delta})}\n\n"
 
-        # Save conversation
-        all_messages = history + [
-            {"role": "user", "content": message},
-            {"role": "assistant", "content": response}
-        ]
-        title = message[:40] + "..." if len(message) > 40 else message
-        save_conv(conv_id, all_messages, title)
+            # Send related questions and save conversation
+            related = get_related(message)
+            all_messages = history + [
+                {"role": "user", "content": message},
+                {"role": "assistant", "content": full_response}
+            ]
+            title = message[:40] + "..." if len(message) > 40 else message
+            save_conv(conv_id, all_messages, title)
 
-        return jsonify({
-            "response": response,
-            "related": related,
-            "conv_id": conv_id
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+            yield f"data: {json.dumps({'done': True, 'related': related, 'conv_id': conv_id})}\n\n"
+
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no'
+        }
+    )
 
 @app.route('/api/conversations', methods=['GET'])
 def conversations():
